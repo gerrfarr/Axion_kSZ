@@ -60,16 +60,17 @@ class mean_pairwise_velocity:
 
 
 		if AXIONS:
-			axion_G_interp,axion_dG_interp=mode_evolution.get_growth()
-			self.__growth,self.__G0=lambda K, A: axion_G_interp(A, K),lambda K: axion_G_interp(1, K)
+			axion_G,axion_dlogG_dlogA=mode_evolution.get_growth(),mode_evolution.get_dlogG_dlogA()
+			self.__growth,self.__G0,self.__dlogG_dlogA=lambda K, A: axion_G(A, K),lambda K: axion_G(1, K),lambda K,A:axion_dlogG_dlogA(A, K)
 		else:
 			dz_interp=self.__phys.get_D_interpolation(recompute=True, save=False)
 			D0=self.__phys.D(0)
 
 			cdm_growth=lambda k, a: dz_interp((1-a)/a)
+			cdm_dlogG_dlogA=lambda K, A: differentiate(lambda log_a: cdm_growth(K, np.exp(log_a)), h=0.01)(np.log(A))/cdm_growth(K, A)
 			cdm_G0=lambda k: D0
 
-			self.__growth,self.__G0=cdm_growth,cdm_G0
+			self.__growth,self.__G0,self.__dlogG_dlogA=cdm_growth,cdm_G0,cdm_dlogG_dlogA
 
 	def compute(self, z, do_unbiased=False, high_res=False, high_res_multi=2, diagnostic=False):
 		"""
@@ -85,7 +86,7 @@ class mean_pairwise_velocity:
 
 		a=1/(1+z)
 
-		masses=np.logspace(1,19,300)
+		masses=np.logspace(np.log10(self.__mMin)-0.5,np.log10(self.__mMax)+0.5,300)
 		print("Computing variance of the mass distribution...")
 		
 		sigma_sq=np.vectorize(lambda r: mean_pairwise_velocity.sigma_mass_distribution_sq(r, a, self.__power_spectrum, self.__growth, self.__G0, kmin_log=np.log(self.__kmin), kmax_log=np.log(self.__kmax), window_function=self.__window_function))(self.__radius_of_mass(masses))
@@ -117,12 +118,9 @@ class mean_pairwise_velocity:
 		halo_bias_moments[1][np.isnan(halo_bias_moments[1])]=np.nanmin(halo_bias_moments[1])
 		halo_bias_1_interp = interp1d(k_vals, halo_bias_moments[0], fill_value=(halo_bias_moments[0][0], halo_bias_moments[0][-1]), bounds_error=False)
 		halo_bias_2_interp = interp1d(k_vals, halo_bias_moments[1], fill_value=(halo_bias_moments[1][0], halo_bias_moments[1][-1]), bounds_error=False)
-
-		# axion growth function
-		f=lambda k: differentiate(lambda log_a: self.__growth(k, np.exp(log_a)), h=0.001)(np.log(a))/self.__growth(k, a)
 		
 		print("Computing two-point correlation functions...")
-		r_vals=np.linspace(1e-3, 250, 500)
+		r_vals=np.linspace(1e-3, 300, 550)
 		correlation_func_q2_vals=[]
 		correlation_func_q1_vals=[]
 		if do_unbiased:
@@ -135,16 +133,23 @@ class mean_pairwise_velocity:
 			res_multiplier=1.0
 
 		if self.__AXIONS:
+			# axion growth function
+			f = lambda k: self.__dlogG_dlogA(k, a)
+
 			correlation_func_vals=np.array(list(map(lambda r: mean_pairwise_velocity.correlation_func(r, a, self.__power_spectrum, self.__growth, self.__G0, halo_bias_1_interp, halo_bias_2_interp, self.__kmin, self.__kmax, f, N=1000*res_multiplier), r_vals)))
 			correlation_func_q1_vals,correlation_func_q2_vals=correlation_func_vals[:,0],correlation_func_vals[:,1]
+
+			if do_unbiased:
+				correlation_func_vals_unbiased=np.array(list(map(lambda r: mean_pairwise_velocity.correlation_func(r, a, self.__power_spectrum, self.__growth, self.__G0, lambda k: 1, lambda k: 1, self.__kmin, self.__kmax, f, N=1000*res_multiplier), r_vals)))
+				correlation_func_q1_vals_unbiased,correlation_func_q2_vals_unbiased=correlation_func_vals_unbiased[:,0],correlation_func_vals_unbiased[:,1]
 			
 		else:
 			correlation_func_vals=np.array(list(map(lambda r: mean_pairwise_velocity.correlation_func(r, a, self.__power_spectrum, self.__growth, self.__G0, halo_bias_1_interp, halo_bias_2_interp, self.__kmin, self.__kmax, N=1000*res_multiplier), r_vals)))
 			correlation_func_q1_vals,correlation_func_q2_vals=correlation_func_vals[:,0],correlation_func_vals[:,1]
 		
-		if do_unbiased:
-			correlation_func_vals_unbiased=np.array(list(map(lambda r: mean_pairwise_velocity.correlation_func(r, a, self.__power_spectrum, self.__growth, self.__G0, lambda k: 1, lambda k: 1, self.__kmin, self.__kmax, N=1000*res_multiplier), r_vals)))
-			correlation_func_q1_vals_unbiased,correlation_func_q2_vals_unbiased=correlation_func_vals_unbiased[:,0],correlation_func_vals_unbiased[:,1]
+			if do_unbiased:
+				correlation_func_vals_unbiased=np.array(list(map(lambda r: mean_pairwise_velocity.correlation_func(r, a, self.__power_spectrum, self.__growth, self.__G0, lambda k: 1, lambda k: 1, self.__kmin, self.__kmax, N=1000*res_multiplier), r_vals)))
+				correlation_func_q1_vals_unbiased,correlation_func_q2_vals_unbiased=correlation_func_vals_unbiased[:,0],correlation_func_vals_unbiased[:,1]
 
 		print("Computing volume averaged correlation function ...")
 		correlation_func_q1_interp=interp1d(r_vals, correlation_func_q1_vals)
@@ -162,14 +167,12 @@ class mean_pairwise_velocity:
 			if do_unbiased:
 				v_vals_unbiased=2/3*100*self.__phys.h*self.__phys.E(z)*a*r_vals*np.array(correlation_func_bar_vals_unbiased)/(1+np.array(correlation_func_q2_vals_unbiased))
 		else:
-			f=lambda a: differentiate(lambda log_a: np.log(self.__growth(0, np.exp(log_a))/self.__G0(0)), h=0.001)(np.log(a))
-
-			v_vals=2/3*f(a)*100*self.__phys.h*self.__phys.E(z)*a*r_vals*np.array(correlation_func_bar_vals)/(1+np.array(correlation_func_q2_vals))
+			v_vals=2/3*self.__dlogG_dlogA(0.0, a)*100*self.__phys.h*self.__phys.E(z)*a*r_vals*np.array(correlation_func_bar_vals)/(1+np.array(correlation_func_q2_vals))
 			if do_unbiased:
-				v_vals_unbiased=2/3*f(a)*100*self.__phys.h*self.__phys.E(z)*a*r_vals*np.array(correlation_func_bar_vals_unbiased)/(1+np.array(correlation_func_q2_vals_unbiased))
+				v_vals_unbiased=2/3*self.__dlogG_dlogA(0.0, a)*100*self.__phys.h*self.__phys.E(z)*a*r_vals*np.array(correlation_func_bar_vals_unbiased)/(1+np.array(correlation_func_q2_vals_unbiased))
 
 		if diagnostic:
-			return r_vals, v_vals, correlation_func_q1_vals, correlation_func_q2_vals, k_vals, halo_bias_moments, masses, sigma_sq, sigma_sq_0
+			return r_vals, v_vals, correlation_func_q1_vals, correlation_func_q2_vals, correlation_func_bar_vals, k_vals, halo_bias_moments, masses, sigma_sq, sigma_sq_0, mass_function(masses, sigma_sq_interp)
 
 		if do_unbiased:
 			return r_vals, v_vals, v_vals_unbiased

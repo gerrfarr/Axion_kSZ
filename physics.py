@@ -5,7 +5,7 @@ from scipy.optimize import newton_krylov
 
 class Physics:
 
-	def __init__(self, GAUSS=True, PRINT_PARAMS=True):
+	def __init__(self, GAUSS=True, PRINT_PARAMS=True, READ_H=True):
 
 		##DEFINE CONSTANTS
 		self.ZMAX=1100 	#redshift at suface of last scattering
@@ -41,11 +41,12 @@ class Physics:
 		self.x_e=1.0 			#ionization fraction
 		
 
-		self.OmegaAxion=0.0 					#fraction of dark matter in the form of axions
-		self.OmegaCDM=1.0-self.OmegaAxion 		#fraction of dark matter in the form of CDM
+		self.f_axion=0.0 					#fraction of dark matter in the form of axions
+		self.f_CDM=1.0-self.f_axion 		#fraction of dark matter in the form of CDM
 
 		self.m_axion=1e-16		#axion mass eV
 		self.ma_L=self.m_axion*self.E_to_invL*self.Mpc_to_m
+		self.w_a=0
 		
 
 		self.Omega_Bh2=self.OmegaB * self.h**2 	#baryon denisty in units of the critical density times h^2
@@ -77,7 +78,7 @@ class Physics:
 		
 		if PRINT_PARAMS:
 			print("Omega0={}, OmegaLambda={}, Omega_Bh2={}, OmegaK={}".format(self.Omega0, self.OmegaLambda, self.Omega_Bh2, 1-self.Omega0-self.OmegaLambda-self.OmegaR))
-			print("AxionFrac={}, m_axion={}".format(self.OmegaAxion, self.m_axion))
+			print("AxionFrac={}, m_axion={}".format(self.f_axion, self.m_axion))
 			print("n={}, h={}".format(self.n, self.h))
 			#print("z_r={}, tau_r={}, x_e={}, delta_w={}, w_r={}".format(self.z_r,self.tau,self.x_e,self.delta_w, self.w_r))
 
@@ -87,11 +88,14 @@ class Physics:
 		self.__zt_interp=None
 		self.__dz_interp=None
 
+		self.__READ_H=READ_H
+		self.__H_interp=None
+
 	@staticmethod
 	def create_parameter_set(axion_mass=1e-24, axion_frac=0.0, omega0h2=0.314626*0.6737**2, omegaBh2=0.0491989*0.6737**2, h=0.6737, ns=0.9652, logAs_1010=3.043, print=False):
 		phys=Physics(True, False)
 		phys.m_axion=axion_mass
-		phys.OmegaAxion=axion_frac
+		phys.f_axion=axion_frac
 		phys.Omega0=omega0h2/h**2
 		phys.OmegaB=omegaBh2/h**2
 		phys.h=h
@@ -99,7 +103,7 @@ class Physics:
 		phys.n=ns
 
 		phys.OmegaLambda=1-phys.Omega0-phys.OmegaR
-		phys.OmegaCDM=1.0-phys.OmegaAxion
+		phys.f_CDM=1.0-phys.f_axion
 
 		phys.Omega_Bh2 = phys.OmegaB * phys.h ** 2
 		phys.ma_L = phys.m_axion * phys.E_to_invL * phys.Mpc_to_m
@@ -116,14 +120,28 @@ class Physics:
 
 		return phys
 
+	def __hash__(self):
+		return hash((self.m_axion, self.f_axion, self.Omega0, self.OmegaB, self.h, self.logAs_1010, self.n))
+
 	def print_params(self):
 		print("Omega0={}, OmegaLambda={}, OmegaB={}".format(self.Omega0, self.OmegaLambda, self.OmegaB))
-		print("AxionFrac={}, m_axion={}".format(self.OmegaAxion, self.m_axion))
+		print("AxionFrac={}, m_axion={}".format(self.f_axion, self.m_axion))
 		print("n={}, h={}".format(self.n, self.h))
+
+	def read_in_H(self, a_vals, H_vals_normalized):
+		if np.any(H_vals_normalized[np.where(a_vals==1.0)[0]]!=1):
+			raise ValueError("The data read in for H does not seem to be normalized!")
+		self.__H_interp=interpolate(a_vals, H_vals_normalized)
 
 	#factor in the friedman equation
 	def E(self, z):
-		return np.sqrt(self.OmegaR*(1+z)**4+self.Omega0*(1+z)**3+self.OmegaLambda+(1-self.Omega0-self.OmegaLambda)*(1+z)**2)
+		if self.__READ_H:
+			try:
+				return self.__H_interp(1/(1+z))
+			except TypeError:
+				raise Exception("Interpolation of H is not defined. Read in H first using function read_in_H(a_vals, H_vals_normalized)")
+		else:
+			return np.sqrt(self.OmegaR*(1+z)**4+self.Omega0*(1+z)**3+self.OmegaLambda+(1-self.Omega0-self.OmegaLambda)*(1+z)**2)
 
 	#comoving distance
 	def w(self, z):

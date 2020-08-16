@@ -168,14 +168,17 @@ class IntegrationNumerics:
 
 		raise Exception("Integral did not converge!")
 
+
 num=IntegrationNumerics(True, gaussPoints=300)
 
-def differentiate(func, h=0.01, log=False):
+
+def differentiate(func, h=0.01, four_point=False):
 	try:
-		if not log:
-			return lambda x: (func(x+h)-func(x-h))/(2*h)
+		if four_point:
+			return lambda x: (func(x-2*h)-8*func(x-h)+8*func(x+h)-func(x+2*h))/(12*h)
 		else:
-			return lambda x: (func(x*10**h)-func(x/10**h))/(x*10**h-x/10**h)
+			return lambda x: (func(x+h)-func(x-h))/(2*h)
+
 	except ValueError as error:
 		print(error)
 		return np.nan
@@ -202,7 +205,7 @@ def interpolate(x_data, y_data, minAsym=None, maxAsym=None, fill_value=None):
 	
 	def func(x):
 		###FIX numerical issue where two identical floats are not considered identical
-		x=np.array(x)
+		x=np.array(x).astype(np.float)
 		return np.piecewise(x, [np.array(x<min(x_data)), np.array(x>max(x_data)), np.array((x>=min(x_data)) & (x<=max(x_data)))], [lambda x:np.array(scalingLow*minAsym(x)), lambda x:np.array(scalingHigh*maxAsym(x)), lambda x:data_interpolation(x)])
 
 	return func

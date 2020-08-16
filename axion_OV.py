@@ -151,9 +151,7 @@ def COMPUTE_AXION_KSZ(phys, modeEvolution, axion_power_spectrum_file, folder="",
 	def rmsT(cls, min, max):
 		return np.sqrt(num.integrate(cls, min, max)/(2*np.pi))
 
-
-
-	axion_G_interp,axion_dG_interp=modeEvolution.get_growth()
+	axion_G_interp,axion_dG_interp=modeEvolution.get_growth(),modeEvolution.get_dG_dt()
 
 	P_CDM=lambda k: phys.sig8**2/sigma8(P_cdm)*P_cdm(k)
 	P_FCDM=lambda k: phys.sig8**2/sigma8(P_fcdm)*P_fcdm(k)

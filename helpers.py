@@ -1,26 +1,10 @@
 from pathos.parallel import ParallelPool
 from pathos.multiprocessing import ProcessPool
 import numpy as np
-import pathos
 from contextlib import contextmanager
-import multiprocess
 import subprocess
 import shlex
-import sys
 
-
-class NoDaemonProcess(multiprocess.Process):
-    def _get_daemon(self):
-        return False
-
-    def _set_daemon(self, value):
-        pass
-    daemon = property(_get_daemon, _set_daemon)
-
-
-class NoDaemonPoolClass(pathos.multiprocessing.Pool):
-    def Process(self, *args, **kwds):
-        return NoDaemonProcess(*args, **kwds)
 
 
 class PseudoPool():
@@ -65,17 +49,6 @@ def MyParallelPool(nodes=None):
     else:
         #print("Using PseudoPool!")
         yield PseudoPool()
-
-
-@contextmanager
-def NoDaemonPool(processes=None):
-    p=NoDaemonPoolClass(processes)
-    try:
-        yield p
-    finally:
-        p.close()
-        p.join()
-        p.clear()
 
 
 def execute(cmd):
