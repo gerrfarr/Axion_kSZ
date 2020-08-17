@@ -174,14 +174,11 @@ if rank==0:
     run_database.save_database()
     print("Total time take to generate parameter sets: {:.2}s".format(start_gen - time.time()))
 
+    camb_run_module = CAMBRun(run_database)
+    camb_run_module.run()
 
-    if len(run_database.get_all_new_camb_runs()):
-        camb_run_module = CAMBRun(run_database)
-        camb_run_module.run()
-
-    if len(run_database.get_all_new_mpv_runs()):
-        mpv_run_module = MPVRun(run_database)
-        mpv_run_module.run()
+    mpv_run_module = MPVRun(run_database)
+    mpv_run_module.run()
 
     print("Computing {} Chi-sq values".format(number_of_runs))
 
@@ -225,7 +222,6 @@ else:
 
     r_vals, z_vals = None, None
     r_vals, z_vals = comm.bcast((r_vals, z_vals), root=0)
-
 
     ids_to_load = None
     ids_to_load = comm.scatter(ids_to_load, root=0)
