@@ -47,7 +47,7 @@ def load_results_file(path, success):
 
 def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_vals, Nz):
     path=mpv_database['results_path'].loc[id_to_load]
-    success = mpv_database['successful_TF'].loc[ids_to_load]
+    success = mpv_database['successful_TF'].loc[id_to_load]
 
     if not success:
         return np.nan
