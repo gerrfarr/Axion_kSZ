@@ -89,7 +89,7 @@ STAGE_III=1
 STAGE_IV=2
 
 if rank==0:
-    run_code = "2020-07-29_sharp_k_lin_n=10_stageIV"
+    run_code = "2020-08-17_sharp_k_lin_n=10_stageIV"
     window = mean_pairwise_velocity.SHARP_K
     stage = STAGE_IV
 
