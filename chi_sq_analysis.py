@@ -63,13 +63,10 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_val
     return chi_sq
 
 
-def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, cov_path, r_eval_vals, Nz):
+def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, iv_cov, r_eval_vals, Nz):
     print("Rank={}".format(rank))
-    print(len(base_run_ids))
-    print(len(run_ids))
     chi_sq_vals = []
     for i in range(len(base_run_ids)):
-        print(i, len(run_ids[i]))
         base_run_id=base_run_ids[i]
         fiducial_path = mpv_database['results_path'].loc[base_run_id]
         fiducial_success = mpv_database['successful_TF'].loc[base_run_id]
@@ -81,7 +78,7 @@ def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, cov_path, r_eval_vals, 
         fiducial_vs = interp1d(fiducial_vals[0], fiducial_vals[1][i])(r_eval_vals)
 
         with MyProcessPool(min([12, len(run_ids[i])])) as p:
-            chi_sq_vals.append(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, cov_path, r_eval_vals, Nz), run_ids[i]))
+            chi_sq_vals.append(p.map(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, iv_cov, r_eval_vals, Nz), run_ids[i]))
 
     return chi_sq_vals
 
