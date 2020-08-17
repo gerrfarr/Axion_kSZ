@@ -59,7 +59,7 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_val
     for i in range(Nz):
         inv_cov = cov.get_inverted_covariance(i)
         result_vs = interp1d(vals[0], vals[1][i])(r_eval_vals)
-        chi_sq+=np.dot((fiducial_vals-result_vs)**2, np.dot(inv_cov, (fiducial_vals-result_vs)**2))/Nz
+        chi_sq+=np.dot((fiducial_vals[i]-result_vs)**2, np.dot(inv_cov, (fiducial_vals[i]-result_vs)**2))/Nz
 
     return chi_sq
 
@@ -79,7 +79,7 @@ def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, cov_path, r_eval_vals, 
             return None
 
         fiducial_vals=load_results_file(fiducial_path, fiducial_success)
-        fiducial_vs = interp1d(fiducial_vals[0], fiducial_vals[1][i])(r_eval_vals)
+        fiducial_vs = [interp1d(fiducial_vals[0], fiducial_vals[1][j])(r_eval_vals) for j in range(Nz)]
 
         with MyProcessPool(min([12, len(run_ids[i])])) as p:
             chi_sq_vals.append(list(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, cov_path, r_eval_vals, Nz), run_ids[i])))
