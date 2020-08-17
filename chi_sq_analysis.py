@@ -45,7 +45,7 @@ def load_results_file(path, success):
     else:
         return None
 
-def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, inv_cov, r_eval_vals, Nz):
+def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_vals, Nz):
     path=mpv_database['results_path'].loc[id_to_load]
     success = mpv_database['successful_TF'].loc[ids_to_load]
 
@@ -53,15 +53,17 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, inv_cov, r_eval_vals
         return np.nan
 
     vals = load_results_file(path, success)
+    cov = Cov.load_covariance(cov_path)
     chi_sq=0
     for i in range(Nz):
+        inv_cov = cov.get_inverted_covariance(i)
         result_vs = interp1d(vals[0], vals[1][i])(r_eval_vals)
-        chi_sq+=np.dot((fiducial_vals-result_vs)**2, np.dot(inv_cov[i], (fiducial_vals-result_vs)**2))/Nz
+        chi_sq+=np.dot((fiducial_vals-result_vs)**2, np.dot(inv_cov, (fiducial_vals-result_vs)**2))/Nz
 
     return chi_sq
 
 
-def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, inv_covariance, r_eval_vals, Nz):
+def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, cov_path, r_eval_vals, Nz):
     print("Rank={}".format(rank))
     print(len(base_run_ids))
     print(len(run_ids))
@@ -79,7 +81,7 @@ def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, inv_covariance, r_eval_
         fiducial_vs = interp1d(fiducial_vals[0], fiducial_vals[1][i])(r_eval_vals)
 
         with MyProcessPool(min([12, len(run_ids[i])])) as p:
-            chi_sq_vals.append(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, inv_covariance, r_eval_vals, Nz), run_ids[i]))
+            chi_sq_vals.append(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, cov_path, r_eval_vals, Nz), run_ids[i]))
 
     return chi_sq_vals
 
@@ -131,14 +133,13 @@ if rank==0:
     P_CAMB = np.loadtxt(filename)
     p_interp = interpolate(P_CAMB[:, 0] * phys.h, P_CAMB[:, 1] / phys.h ** 3, phys.P_cdm, phys.P_cdm)
 
-
-
+    cov_path="covariance_matrix_{}_{}.dat".format(['top-hat', 'gaussian', 'sharp-k', 'no-filter'][window], ["stageII", "stageIII", "stageIV"][stage])
     try:
-        cov = Cov.load_covariance("covariance_matrix_{}_{}.dat".format(['top-hat', 'gaussian', 'sharp-k', 'no-filter'][window], ["stageII", "stageIII", "stageIV"][stage]))
+        cov = Cov.load_covariance(cov_path)
     except (IOError, OSError) as e:
         print("Covariance matrix not found. Recomputing...")
         cov = Cov(p_interp, None, zmin, zmax, Nz, r_vals, delta_r, overlap_area[stage] / 129600 * np.pi, sigma_v_vals[stage], kmin=min(P_CAMB[:, 0] * phys.h), kmax=max(P_CAMB[:, 0] * phys.h), mMin=minClusterMass[stage], mMax=1e16, physics=phys, window_function=window)
-        cov.save_covariance("covariance_matrix_{}_{}.dat".format(['top-hat', 'gaussian', 'sharp-k', 'no-filter'][window], ["stageII", "stageIII", "stageIV"][stage]))
+        cov.save_covariance(cov_path)
 
     inverse_cov_matrices=np.empty((Nz, len(r_vals), len(r_vals)))
     for i in range(Nz):
@@ -190,7 +191,7 @@ if rank==0:
     db_path = run_database.get_mpv_db_path()
     db_path = comm.bcast(db_path, root=0)
     print("Broadcasting covariance...")
-    inverse_cov_matrices = comm.bcast(inverse_cov_matrices, root=0)
+    cov_path = comm.bcast(cov_path, root=0)
     r_vals, z_vals = comm.bcast((r_vals, z_vals), root=0)
 
     print("Scattering computations...")
@@ -200,6 +201,7 @@ if rank==0:
     base_ids_to_load = chunk_evenly(base_run_ids, size)
     base_ids_to_load = comm.scatter(base_ids_to_load, root=0)
 
+    print("Starting computation...")
     chi_sq_vals = get_chi_sq_vals(run_database.get_mpv_database(), base_ids_to_load, ids_to_load, inverse_cov_matrices, r_vals, len(z_vals))
 
     flatten = lambda l: [item for sublist in l for item in sublist]
@@ -218,11 +220,12 @@ else:
     db_path = None
     db_path = comm.bcast(db_path, root=0)
 
-    inverse_cov_matrices = None
-    inverse_cov_matrices = comm.bcast(inverse_cov_matrices, root=0)
+    cov_path = None
+    cov_path = comm.bcast(cov_path, root=0)
 
     r_vals, z_vals = None, None
     r_vals, z_vals = comm.bcast((r_vals, z_vals), root=0)
+
 
     ids_to_load = None
     ids_to_load = comm.scatter(ids_to_load, root=0)
@@ -234,7 +237,7 @@ else:
     with open(db_path, "rb") as f:
         mpv_db = dill.load(f)
 
-    chi_sq_vals = get_chi_sq_vals(mpv_db, base_ids_to_load, ids_to_load, inverse_cov_matrices, r_vals, len(z_vals))
+    chi_sq_vals = get_chi_sq_vals(mpv_db, base_ids_to_load, ids_to_load, cov_path, r_vals, len(z_vals))
 
     chi_sq_vals = comm.gather(chi_sq_vals, root=0)
 
