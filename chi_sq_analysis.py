@@ -11,8 +11,7 @@ import dill
 from mean_pairwise_velocity import mean_pairwise_velocity
 from covariance import covariance_matrix as Cov
 from numerics import interpolate
-from generate_parameters import ParameterGenerator
-from helpers import MyProcessPool, execute
+from helpers import MyProcessPool
 import MPI_error_handler
 from scipy.interpolate import interp1d
 
@@ -168,7 +167,7 @@ if rank==0:
 
             number_of_runs+=1
 
-        run_database_ids.append(run_database_ids)
+        run_database_ids.append(run_database_ids_tmp)
         base_run_ids.append(base_run_id)
 
     run_database.save_database()
