@@ -65,9 +65,12 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_val
 
 def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, iv_cov, r_eval_vals, Nz):
     print("Rank={}".format(rank))
+    print(np.shape(run_ids))
     chi_sq_vals = []
     for i in range(len(base_run_ids)):
         base_run_id=base_run_ids[i]
+        print(base_run_id)
+        print(run_ids[i])
         fiducial_path = mpv_database['results_path'].loc[base_run_id]
         fiducial_success = mpv_database['successful_TF'].loc[base_run_id]
 
@@ -170,6 +173,7 @@ if rank==0:
 
     run_database.save_database()
     print("Total time take to generate parameter sets: {:.2}s".format(start_gen - time.time()))
+    print(np.shape(run_database_ids))
 
     camb_run_module = CAMBRun(run_database)
     camb_run_module.run()
