@@ -95,9 +95,9 @@ if rank==0:
 
     run_database = RunDatabaseManager(os.getcwd() + "/camb_db.dat", os.getcwd() + "/mpv_db.dat")
 
-    axion_masses = np.logspace(-27, -21, 6*10+1)
+    axion_masses = np.logspace(-27, -23, 4*10+1)
     axion_frac_vals_lin = np.linspace(0.0, 1.0, 15)
-    axion_frac_vals_log = np.logspace(1e-3, 0.0, 15)
+    axion_frac_vals_log = np.logspace(-3, 0.0, 15)
     axion_frac_vals = np.unique(np.concatenate((axion_frac_vals_lin, axion_frac_vals_log), 0))
 
     phys = Physics(True, True, READ_H=False)
