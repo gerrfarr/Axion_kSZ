@@ -181,7 +181,7 @@ if rank==0:
     mpv_run_module = MPVRun(run_database)
     mpv_run_module.run()
 
-    print("Computing {} Chi-sq values".fromat(number_of_runs))
+    print("Computing {} Chi-sq values".format(number_of_runs))
 
     print(np.shape(np.array(run_database_ids)))
     print(np.shape(np.array(base_run_ids)))
