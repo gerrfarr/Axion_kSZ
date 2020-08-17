@@ -56,16 +56,19 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, inv_cov, r_eval_vals
     vals = load_results_file(path, success)
     chi_sq=0
     for i in range(Nz):
-        fiducial_vs=interp1d(fiducial_vals[0], fiducial_vals[1][i])(r_eval_vals)
         result_vs = interp1d(vals[0], vals[1][i])(r_eval_vals)
-        chi_sq+=np.dot((fiducial_vs-result_vs)**2, np.dot(inv_cov[i], (fiducial_vs-result_vs)**2))/Nz
+        chi_sq+=np.dot((fiducial_vals-result_vs)**2, np.dot(inv_cov[i], (fiducial_vals-result_vs)**2))/Nz
 
     return chi_sq
 
 
 def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, inv_covariance, r_eval_vals, Nz):
+    print("Rank={}".format(rank))
+    print(np.shape(np.array(base_run_ids)))
+    print(np.shape(np.array(run_ids)))
     chi_sq_vals = []
     for i in range(len(base_run_ids)):
+        print(len(run_ids[i]))
         base_run_id=base_run_ids[i]
         fiducial_path = mpv_database['results_path'].loc[base_run_id]
         fiducial_success = mpv_database['successful_TF'].loc[base_run_id]
@@ -74,9 +77,10 @@ def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, inv_covariance, r_eval_
             return None
 
         fiducial_vals=load_results_file(fiducial_path, fiducial_success)
+        fiducial_vs = interp1d(fiducial_vals[0], fiducial_vals[1][i])(r_eval_vals)
 
         with MyProcessPool(min([12, len(run_ids[i])])) as p:
-            chi_sq_vals.append(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vals, run_id, inv_covariance, r_eval_vals, Nz), run_ids[i]))
+            chi_sq_vals.append(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, inv_covariance, r_eval_vals, Nz), run_ids[i]))
 
     return chi_sq_vals
 
@@ -148,6 +152,7 @@ if rank==0:
     run_database_ids=[]
     base_run_ids=[]
 
+    number_of_runs=0
     for mass in axion_masses:
         base_run_id = None
         run_database_ids_tmp = []
@@ -160,6 +165,8 @@ if rank==0:
                 base_run_id=run_entry.name
             else:
                 run_database_ids_tmp.append(run_entry.name)
+
+            number_of_runs+=1
 
         run_database_ids.append(run_database_ids)
         base_run_ids.append(base_run_id)
@@ -174,7 +181,11 @@ if rank==0:
     mpv_run_module = MPVRun(run_database)
     mpv_run_module.run()
 
-    print("Computing Chi-sq values")
+    print("Computing {} Chi-sq values".fromat(number_of_runs))
+
+    print(np.shape(np.array(run_database_ids)))
+    print(np.shape(np.array(base_run_ids)))
+
     start_chi_sq=time.time()
 
     db_path = run_database.get_mpv_db_path()
