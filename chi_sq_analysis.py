@@ -141,7 +141,7 @@ if rank==0:
     for i in range(Nz):
         inverse_cov_matrices[i]=cov.get_inverted_covariance(i)
 
-    print("Total time take to get covariance matrices: {:.2f}s".format(time.time()-start_cov))
+    print("Total time take to get covariance matrices: {:.2f} s".format(time.time()-start_cov))
 
     print("Generating parameters and accessing database")
     start_gen = time.time()
@@ -168,7 +168,7 @@ if rank==0:
         base_run_ids.append(base_run_id)
 
     run_database.save_database()
-    print("Total time take to generate parameter sets: {:.2f}s".format(time.time()-start_gen))
+    print("Total time take to generate parameter sets: {:.2f} s".format(time.time()-start_gen))
     print(np.shape(run_database_ids))
 
     camb_run_module = CAMBRun(run_database)
