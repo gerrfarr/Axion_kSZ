@@ -47,7 +47,6 @@ def load_results_file(path, success):
 
 def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_vals, Nz):
     path=mpv_database['results_path'].loc[id_to_load]
-    print(path,cov_path)
     success = mpv_database['successful_TF'].loc[id_to_load]
 
     if not success:
@@ -65,13 +64,9 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_val
 
 
 def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, cov_path, r_eval_vals, Nz):
-    print("Rank={}".format(rank))
-    print(np.shape(run_ids))
     chi_sq_vals = []
     for i in range(len(base_run_ids)):
         base_run_id=base_run_ids[i]
-        print(base_run_id)
-        print(run_ids[i])
         fiducial_path = mpv_database['results_path'].loc[base_run_id]
         fiducial_success = mpv_database['successful_TF'].loc[base_run_id]
 
@@ -100,7 +95,7 @@ if rank==0:
 
     run_database = RunDatabaseManager(os.getcwd() + "/camb_db.dat", os.getcwd() + "/mpv_db.dat")
 
-    axion_masses = np.logspace(-25, -23, 2*10+1)
+    axion_masses = np.logspace(-27, -21, 6*10+1)
     axion_frac_vals_lin = np.linspace(0.0, 1.0, 15)
     axion_frac_vals_log = np.logspace(1e-3, 0.0, 15)
     axion_frac_vals = np.unique(np.concatenate((axion_frac_vals_lin, axion_frac_vals_log), 0))
@@ -146,9 +141,9 @@ if rank==0:
     for i in range(Nz):
         inverse_cov_matrices[i]=cov.get_inverted_covariance(i)
 
-    print("Total time take to get covariance matrices: {:.2}s".format(start_cov-time.time()))
+    print("Total time take to get covariance matrices: {:.f2}s".format(time.time()-start_cov))
 
-    print("Generating paramters and accessing database")
+    print("Generating parameters and accessing database")
     start_gen = time.time()
     run_database_ids=[]
     base_run_ids=[]
@@ -173,7 +168,7 @@ if rank==0:
         base_run_ids.append(base_run_id)
 
     run_database.save_database()
-    print("Total time take to generate parameter sets: {:.2}s".format(start_gen - time.time()))
+    print("Total time take to generate parameter sets: {:.f2}s".format(time.time()-start_gen))
     print(np.shape(run_database_ids))
 
     camb_run_module = CAMBRun(run_database)
@@ -183,7 +178,6 @@ if rank==0:
     mpv_run_module.run()
 
     print("Computing {} Chi-sq values".format(number_of_runs))
-
     start_chi_sq=time.time()
 
     print("Broadcasting db path...")
@@ -208,7 +202,7 @@ if rank==0:
     chi_sq_vals = comm.gather(chi_sq_vals, root=0)
     chi_sq_vals = flatten(chi_sq_vals)
 
-    print("Total time take to compute Chi-sq values: {:.2}s".format(start_chi_sq - time.time()))
+    print("Total time take to compute Chi-sq values: {:.f2}s".format(time.time()-start_chi_sq))
 
     np.save("chi-sq_results_{}".format(run_code), (axion_masses, axion_frac_vals, chi_sq_vals))
 
