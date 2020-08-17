@@ -47,6 +47,7 @@ def load_results_file(path, success):
 
 def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_vals, Nz):
     print(id_to_load)
+    print(cov_path)
     path=mpv_database['results_path'].loc[id_to_load]
     success = mpv_database['successful_TF'].loc[id_to_load]
 
@@ -64,7 +65,7 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_val
     return chi_sq
 
 
-def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, iv_cov, r_eval_vals, Nz):
+def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, cov_path, r_eval_vals, Nz):
     print("Rank={}".format(rank))
     print(np.shape(run_ids))
     chi_sq_vals = []
@@ -82,7 +83,7 @@ def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, iv_cov, r_eval_vals, Nz
         fiducial_vs = interp1d(fiducial_vals[0], fiducial_vals[1][i])(r_eval_vals)
 
         with MyProcessPool(min([12, len(run_ids[i])])) as p:
-            chi_sq_vals.append(list(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, iv_cov, r_eval_vals, Nz), run_ids[i])))
+            chi_sq_vals.append(list(p.imap(lambda run_id: compute_chi_sq(mpv_database, fiducial_vs, run_id, cov_path, r_eval_vals, Nz), run_ids[i])))
 
     return chi_sq_vals
 
