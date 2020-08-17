@@ -64,11 +64,11 @@ def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, inv_cov, r_eval_vals
 
 def get_chi_sq_vals(mpv_database, base_run_ids, run_ids, inv_covariance, r_eval_vals, Nz):
     print("Rank={}".format(rank))
-    print(np.shape(np.array(base_run_ids)))
-    print(np.shape(np.array(run_ids)))
+    print(len(base_run_ids))
+    print(len(run_ids))
     chi_sq_vals = []
     for i in range(len(base_run_ids)):
-        print(len(run_ids[i]))
+        print(i, len(run_ids[i]))
         base_run_id=base_run_ids[i]
         fiducial_path = mpv_database['results_path'].loc[base_run_id]
         fiducial_success = mpv_database['successful_TF'].loc[base_run_id]
@@ -175,16 +175,15 @@ if rank==0:
     print("Total time take to generate parameter sets: {:.2}s".format(start_gen - time.time()))
 
 
-    camb_run_module = CAMBRun(run_database)
-    camb_run_module.run()
+    if len(run_database.get_all_new_camb_runs()):
+        camb_run_module = CAMBRun(run_database)
+        camb_run_module.run()
 
-    mpv_run_module = MPVRun(run_database)
-    mpv_run_module.run()
+    if len(run_database.get_all_new_mpv_runs()):
+        mpv_run_module = MPVRun(run_database)
+        mpv_run_module.run()
 
     print("Computing {} Chi-sq values".format(number_of_runs))
-
-    print(np.shape(np.array(run_database_ids)))
-    print(np.shape(np.array(base_run_ids)))
 
     start_chi_sq=time.time()
 
