@@ -47,7 +47,7 @@ def load_results_file(path, success):
 
 def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_vals, Nz):
     path=mpv_database['results_path'].loc[id_to_load]
-    print(path)
+    print(path,cov_path)
     success = mpv_database['successful_TF'].loc[id_to_load]
 
     if not success:
@@ -201,7 +201,7 @@ if rank==0:
     base_ids_to_load = comm.scatter(base_ids_to_load, root=0)
 
     print("Starting computation...")
-    chi_sq_vals = get_chi_sq_vals(run_database.get_mpv_database(), base_ids_to_load, ids_to_load, inverse_cov_matrices, r_vals, len(z_vals))
+    chi_sq_vals = get_chi_sq_vals(run_database.get_mpv_database(), base_ids_to_load, ids_to_load, cov_path, r_vals, len(z_vals))
 
     flatten = lambda l: [item for sublist in l for item in sublist]
 
