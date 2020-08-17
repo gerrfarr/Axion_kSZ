@@ -46,9 +46,8 @@ def load_results_file(path, success):
         return None
 
 def compute_chi_sq(mpv_database, fiducial_vals, id_to_load, cov_path, r_eval_vals, Nz):
-    print(id_to_load)
-    print(cov_path)
     path=mpv_database['results_path'].loc[id_to_load]
+    print(path)
     success = mpv_database['successful_TF'].loc[id_to_load]
 
     if not success:
