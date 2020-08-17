@@ -186,11 +186,14 @@ if rank==0:
 
     start_chi_sq=time.time()
 
+    print("Broadcasting db path...")
     db_path = run_database.get_mpv_db_path()
     db_path = comm.bcast(db_path, root=0)
+    print("Broadcasting covariance...")
     inverse_cov_matrices = comm.bcast(inverse_cov_matrices, root=0)
     r_vals, z_vals = comm.bcast((r_vals, z_vals), root=0)
 
+    print("Scattering computations...")
     ids_to_load = chunk_evenly(run_database_ids, size)
     ids_to_load = comm.scatter(ids_to_load, root=0)
 
