@@ -76,6 +76,7 @@ for i in range(1, 6):
         try:
             v_vals = interp1d(velocities[0][i][fiducial_index][0], velocities[0][i][fiducial_index][1][j])(r_vals)
             plotting_derivatives[i][j]=derivatives[0,i][j]/v_vals*fiducial_params[i]
+
         except Exception as ex:
             print(str(ex))
             pass
