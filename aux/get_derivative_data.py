@@ -1,5 +1,6 @@
 import numpy as np
 from ..physics import Physics
+from ..generate_parameters import ParameterGenerator
 
 STAGE_II=0
 STAGE_III=1
@@ -11,6 +12,8 @@ stage = STAGE_IV
 
 derivatives = np.load(data_dir+"derivatives_results_{}.npy".format(run_code), allow_pickle=True)
 velocities = np.load(data_dir+"velocities_results_{}.npy".format(run_code), allow_pickle=True)
+
+plotting_derivatives=[None for i in range(6)]
 
 
 axion_masses = np.logspace(-33, -21, 12*10+1)
@@ -49,4 +52,12 @@ Nz = z_bin_no[stage]
 z_step = (zmax - zmin) / Nz
 z_vals = np.linspace(zmin + z_step / 2, zmax - z_step / 2, Nz)
 
-for s in syte
+fiducial_params=[0.0, phys.f_axion, OmegaMh2, OmegaBh2, phys.h, phys.n, phys.logAs_1010]
+
+for i in range(len(step_sizes)):
+    axion_frac_vals = np.arange(0.0, min([step_sizes[i] * n_steps + 1e-5, 1.0 + 1e-5]), step_sizes[i])
+    # axion_frac_vals = np.linspace(0.0, step_sizes[i]*n_steps, n_steps + 1)
+
+
+
+for i in range(1, 6):

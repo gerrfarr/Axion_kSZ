@@ -84,7 +84,8 @@ class MPVRun:
 
         start=time.time()
 
-        ids_to_be_run=np.random.shuffle(self.__database.get_all_new_mpv_runs().index)
+        ids_to_be_run=self.__database.get_all_new_mpv_runs().index
+        np.random.shuffle(ids_to_be_run)
 
         print("MPV: Scattering {} tasks to {} nodes...".format(len(ids_to_be_run), size))
 

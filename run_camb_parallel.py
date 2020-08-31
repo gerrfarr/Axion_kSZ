@@ -84,8 +84,7 @@ class CAMBRun:
 
         ids_to_be_run=self.__database.get_all_new_camb_runs().index
 
-        if len(ids_to_be_run)>0:
-            ids_to_be_run=np.random.shuffle(ids_to_be_run)
+        np.random.shuffle(ids_to_be_run)
 
         print("CAMB: Scattering {} tasks to {} nodes...".format(len(ids_to_be_run), size))
 
