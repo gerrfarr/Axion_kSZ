@@ -1,6 +1,7 @@
 import numpy as np
 from ..physics import Physics
 from ..generate_parameters import ParameterGenerator
+from scipy.interpolate import interp1d
 
 STAGE_II=0
 STAGE_III=1
@@ -52,12 +53,29 @@ Nz = z_bin_no[stage]
 z_step = (zmax - zmin) / Nz
 z_vals = np.linspace(zmin + z_step / 2, zmax - z_step / 2, Nz)
 
-fiducial_params=[0.0, phys.f_axion, OmegaMh2, OmegaBh2, phys.h, phys.n, phys.logAs_1010]
+params = [None, omegaMh2_vals, omegaBh2_vals, h_vals, ns_vals, logAs_1010_vals]
+fiducial_params=[phys.f_axion, OmegaMh2, OmegaBh2, phys.h, phys.n, phys.logAs_1010]
 
+plotting_derivatives[0]=np.fill((len(step_sizes), len(axion_masses), len(z_vals), len(r_vals)), np.nan)
 for i in range(len(step_sizes)):
-    axion_frac_vals = np.arange(0.0, min([step_sizes[i] * n_steps + 1e-5, 1.0 + 1e-5]), step_sizes[i])
-    # axion_frac_vals = np.linspace(0.0, step_sizes[i]*n_steps, n_steps + 1)
-
-
+    for j in range(len(axion_masses)):
+        for k in range(len(z_vals)):
+            try:
+                v_vals = interp1d(velocities[i][0][j][0][0], velocities[i][0][j][0][1][k])(r_vals)
+                plotting_derivatives[0][i,j,k]=derivatives[i,0][j,k]/v_vals
+            except Exception as ex:
+                print(str(ex))
+                pass
 
 for i in range(1, 6):
+    plotting_derivatives[i] = np.fill((len(z_vals), len(r_vals)), np.nan)
+    fiducial_index=int(np.where(params[i]==fiducial_params[i])[0])
+    for j in range(len(z_vals)):
+        try:
+            v_vals = interp1d(velocities[0][i][fiducial_index][0], velocities[0][i][fiducial_index][1][j])(r_vals)
+            plotting_derivatives[i][j]=derivatives[0,i][j]/v_vals
+        except Exception as ex:
+            print(str(ex))
+            pass
+
+np.save(data_dir+"derivatives_plotting_{}".format(run_code))
