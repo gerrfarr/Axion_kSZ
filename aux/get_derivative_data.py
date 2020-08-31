@@ -58,7 +58,7 @@ z_vals = np.linspace(zmin + z_step / 2, zmax - z_step / 2, Nz)
 params = [None, omegaMh2_vals, omegaBh2_vals, h_vals, ns_vals, logAs_1010_vals]
 fiducial_params=[phys.f_axion, OmegaMh2, OmegaBh2, phys.h, phys.n, phys.logAs_1010]
 
-plotting_derivatives[0]=np.fill((len(step_sizes), len(axion_masses), len(z_vals), len(r_vals)), np.nan)
+plotting_derivatives[0]=np.full((len(step_sizes), len(axion_masses), len(z_vals), len(r_vals)), np.nan)
 for i in range(len(step_sizes)):
     for j in range(len(axion_masses)):
         for k in range(len(z_vals)):
@@ -70,7 +70,7 @@ for i in range(len(step_sizes)):
                 pass
 
 for i in range(1, 6):
-    plotting_derivatives[i] = np.fill((len(z_vals), len(r_vals)), np.nan)
+    plotting_derivatives[i] = np.full((len(z_vals), len(r_vals)), np.nan)
     fiducial_index=int(np.where(params[i]==fiducial_params[i])[0])
     for j in range(len(z_vals)):
         try:
