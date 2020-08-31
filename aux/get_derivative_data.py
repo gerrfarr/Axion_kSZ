@@ -1,6 +1,8 @@
+import sys
+sys.path.insert(0, "home/gerrit/kSZ/source_parameterConstraints")
 import numpy as np
-from ..physics import Physics
-from ..generate_parameters import ParameterGenerator
+from physics import Physics
+from generate_parameters import ParameterGenerator
 from scipy.interpolate import interp1d
 
 STAGE_II=0
