@@ -75,9 +75,9 @@ for i in range(1, 6):
     for j in range(len(z_vals)):
         try:
             v_vals = interp1d(velocities[0][i][fiducial_index][0], velocities[0][i][fiducial_index][1][j])(r_vals)
-            plotting_derivatives[i][j]=derivatives[0,i][j]/v_vals
+            plotting_derivatives[i][j]=derivatives[0,i][j]/v_vals*fiducial_params[i]
         except Exception as ex:
             print(str(ex))
             pass
 
-np.save(np.array(plotting_derivatives), data_dir+"derivatives_plotting_{}".format(run_code))
+np.save(plotting_derivatives, data_dir+"derivatives_plotting_{}".format(run_code), (plotting_derivatives, r_vals, z_vals, axion_masses, step_sizes, fiducial_params))
