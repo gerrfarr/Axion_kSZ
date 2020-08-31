@@ -64,7 +64,7 @@ for i in range(len(step_sizes)):
         for k in range(len(z_vals)):
             try:
                 v_vals = interp1d(velocities[i][0][j][0][0], velocities[i][0][j][0][1][k])(r_vals)
-                plotting_derivatives[0][i,j,k]=derivatives[i,0][j,k]/v_vals
+                plotting_derivatives[0][i,j,k]=derivatives[i,0][j][k]/v_vals
             except Exception as ex:
                 print(str(ex))
                 pass
