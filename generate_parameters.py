@@ -104,6 +104,9 @@ class ParameterGenerator:
 		else:
 			return self.__params
 
+	def get_fiducial_params(self):
+		return self.__fiducial_values
+
 	def get_pickled_params(self):
 		return [dill.dumps(x) for x in self.get_params(flat=True)]
 
