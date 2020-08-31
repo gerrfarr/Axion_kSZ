@@ -81,4 +81,4 @@ for i in range(1, 6):
             print(str(ex))
             pass
 
-np.save(plotting_derivatives, data_dir+"derivatives_plotting_{}".format(run_code), (plotting_derivatives, r_vals, z_vals, axion_masses, step_sizes, fiducial_params))
+np.save(data_dir+"derivatives_plotting_{}".format(run_code), (plotting_derivatives, r_vals, z_vals, axion_masses, step_sizes, fiducial_params))
