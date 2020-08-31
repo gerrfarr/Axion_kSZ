@@ -73,6 +73,7 @@ for i in range(1, 6):
     plotting_derivatives[i] = np.full((len(z_vals), len(r_vals)), np.nan)
     fiducial_index=int(np.where(params[i]==fiducial_params[i])[0])
     for j in range(len(z_vals)):
+        print(fiducial_index)
         try:
             v_vals = interp1d(velocities[0][i][fiducial_index][0], velocities[0][i][fiducial_index][1][j])(r_vals)
             plotting_derivatives[i][j]=derivatives[0,i][j]/v_vals
@@ -80,4 +81,4 @@ for i in range(1, 6):
             print(str(ex))
             pass
 
-np.save(data_dir+"derivatives_plotting_{}".format(run_code))
+np.save(plotting_derivatives, data_dir+"derivatives_plotting_{}".format(run_code))
