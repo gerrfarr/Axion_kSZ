@@ -82,7 +82,7 @@ class CAMBRun:
 
         start=time.time()
 
-        ids_to_be_run=self.__database.get_all_new_camb_runs().index
+        ids_to_be_run=list(self.__database.get_all_new_camb_runs().index)
 
         np.random.shuffle(ids_to_be_run)
 
