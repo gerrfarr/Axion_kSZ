@@ -89,9 +89,9 @@ STAGE_III=1
 STAGE_IV=2
 
 if rank==0:
-    run_code = "2020-09-01_sharp_k_lin_n=10_stageIII"
+    run_code = "2020-09-01_sharp_k_lin_n=10_stageII"
     window = mean_pairwise_velocity.SHARP_K
-    stage = STAGE_III
+    stage = STAGE_II
 
     run_database = RunDatabaseManager(os.getcwd() + "/camb_db.dat", os.getcwd() + "/mpv_db.dat")
 
