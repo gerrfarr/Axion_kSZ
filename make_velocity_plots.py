@@ -5,6 +5,7 @@ from covariance import covariance_matrix as Cov
 from numerics import interpolate
 from save_output import SaveOutput
 from helpers import *
+from read_mode_evolution import GrowthInterpolation
 
 
 
@@ -45,9 +46,6 @@ def run_mpv(log_path, result_path, file_root, physics_params, window, minMass, z
             try:
                 startMPV = time.time()
 
-                physics_params = None
-                physics_params.print_params()
-
                 P_CAMB = np.loadtxt(file_root + '_matterpower_out.dat')
                 p_interp = interpolate(P_CAMB[:, 0] * physics_params.h, P_CAMB[:, 1] / physics_params.h ** 3, physics_params.P_cdm, physics_params.P_cdm)
                 gInterpolator = GrowthInterpolation(file_root, physics=physics_params)
@@ -79,12 +77,12 @@ def run_mpv(log_path, result_path, file_root, physics_params, window, minMass, z
 
             except OSError as ex:
                 print(str(ex) + "\n")
-                print("Velocity Spectra with ID {} did not compute because CAMB failed!".format(mpv_db_ID))
+                print("Velocity Spectra did not compute because CAMB failed!\n")
                 return False
 
             except Exception as ex:
                 print(str(ex) + "\n")
-                print("Something went wrong in process {}!\n".format(mpv_db_ID))
+                print("Something went wrong in process {}!\n")
                 return False
 
 
@@ -145,8 +143,8 @@ for m in axion_masses:
         phys = Physics.create_parameter_set(axion_mass=m, axion_frac=f)
         params.append(phys)
 
-with MyProcessPool(12) as p:
-    p.map(lambda i: run_axionCAMB("CAMB_run4plots_{}".format(i), params[i]), range(0, len(params)))
+#with MyProcessPool(12) as p:
+#    p.map(lambda i: run_axionCAMB("CAMB_run4plots_{}".format(i), params[i]), range(0, len(params)))
 
 with MyProcessPool(12) as p:
     outputs = p.map(lambda i:  run_mpv("MPV_run4plots_log_{}".format(i), "MPV_run4plots_{}".format(i), "CAMB_run4plots_{}".format(i), params[i], window, minClusterMass[stage], z_vals), range(0, len(params)))
