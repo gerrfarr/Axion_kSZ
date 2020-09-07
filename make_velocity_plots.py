@@ -91,9 +91,9 @@ STAGE_II=0
 STAGE_III=1
 STAGE_IV=2
 
-run_code = "2020-09-07_sharp_k_stageIII_plotting"
+run_code = "2020-09-07_sharp_k_stageIV_plotting"
 window = mean_pairwise_velocity.SHARP_K
-stage = STAGE_III
+stage = STAGE_IV
 
 axion_masses = [1.0e-27, 5.0e-27, 1.0e-26, 5.0e-26, 1.0e-25, 5.0e-25, 1.0e-24, 5.0e-24]
 axion_frac_vals = [0.0, 0.25, 0.5, 0.75, 1.0]
