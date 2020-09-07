@@ -1,6 +1,4 @@
 from physics import Physics
-from database_management import RunDatabaseManager
-import os
 import time
 from mean_pairwise_velocity import mean_pairwise_velocity
 from covariance import covariance_matrix as Cov
@@ -98,8 +96,6 @@ STAGE_IV=2
 run_code = "2020-09-07_sharp_k_stageIII_plotting"
 window = mean_pairwise_velocity.SHARP_K
 stage = STAGE_III
-
-run_database = RunDatabaseManager(os.getcwd() + "/camb_db.dat", os.getcwd() + "/mpv_db.dat")
 
 axion_masses = [1.0e-27, 5.0e-27, 1.0e-26, 5.0e-26, 1.0e-25, 5.0e-25, 1.0e-24, 5.0e-24]
 axion_frac_vals = [0.0, 0.25, 0.5, 0.75, 1.0]
