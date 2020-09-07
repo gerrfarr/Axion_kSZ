@@ -146,10 +146,10 @@ for m in axion_masses:
         params.append(phys)
 
 with MyProcessPool(12) as p:
-    p.imap(lambda i: run_axionCAMB("CMAB_run4plots_{}".fromat(i), params[i], "CMAB_run4plots_log_{}".fromat(i)), range(0, len(params)))
+    p.map(lambda i: run_axionCAMB("CMAB_run4plots_{}".fromat(i), params[i], "CMAB_run4plots_log_{}".fromat(i)), range(0, len(params)))
 
 with MyProcessPool(12) as p:
-    outputs = p.imap(lambda i:  run_mpv("MPV_run4plots_log_{}".fromat(i), "MPV_run4plots_{}".fromat(i), "CMAB_run4plots_{}".fromat(i), params[i], window, minClusterMass[stage], z_vals), range(0, len(params)))
+    outputs = p.map(lambda i:  run_mpv("MPV_run4plots_log_{}".fromat(i), "MPV_run4plots_{}".fromat(i), "CMAB_run4plots_{}".fromat(i), params[i], window, minClusterMass[stage], z_vals), range(0, len(params)))
 
 final=[]
 for i in range(len(axion_masses)):
