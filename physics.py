@@ -92,8 +92,8 @@ class Physics:
 		self.__H_interp=None
 
 	@staticmethod
-	def create_parameter_set(axion_mass=1e-24, axion_frac=0.0, omega0h2=0.314626*0.6737**2, omegaBh2=0.0491989*0.6737**2, h=0.6737, ns=0.9652, logAs_1010=3.043, print=False):
-		phys=Physics(True, False)
+	def create_parameter_set(axion_mass=1e-24, axion_frac=0.0, omega0h2=0.314626*0.6737**2, omegaBh2=0.0491989*0.6737**2, h=0.6737, ns=0.9652, logAs_1010=3.043, print=False, read_H=True):
+		phys=Physics(True, False, read_H)
 		phys.m_axion=axion_mass
 		phys.f_axion=axion_frac
 		phys.Omega0=omega0h2/h**2
