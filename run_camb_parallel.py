@@ -13,6 +13,7 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 name = MPI.Get_processor_name()
 
+CAMB_path="/home/gerrit/kSZ/axionCAMB_2/camb"
 class CAMBRun:
 
     def __init__(self, database):
@@ -28,9 +29,9 @@ class CAMBRun:
         start_time = time.time()
         try:
             if log_path is not None:
-                subprocess.call("/home/gerrit/kSZ/axionCAMB/camb /home/gerrit/kSZ/axionCAMB/inifiles/params.ini 1 {} 2 {} 3 {} 4 {} 5 {} 6 {} 7 {} 8 T 9 {} > {}".format(phys.Omega_Bh2, max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * (1 - phys.f_axion), 1.0e-6]), max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * phys.f_axion, 1.0e-6]), phys.m_axion, 100 * phys.h, phys.n, np.exp(phys.logAs_1010) / 1.0e10, fileroot, log_path), shell=True)
+                subprocess.call(CAMB_path+" /home/gerrit/kSZ/axionCAMB/inifiles/params.ini 1 {} 2 {} 3 {} 4 {} 5 {} 6 {} 7 {} 8 T 9 {} > {}".format(phys.Omega_Bh2, max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * (1 - phys.f_axion), 1.0e-6]), max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * phys.f_axion, 1.0e-6]), phys.m_axion, 100 * phys.h, phys.n, np.exp(phys.logAs_1010) / 1.0e10, fileroot, log_path), shell=True)
             else:
-                subprocess.call("/home/gerrit/kSZ/axionCAMB/camb /home/gerrit/kSZ/axionCAMB/inifiles/params.ini 1 {} 2 {} 3 {} 4 {} 5 {} 6 {} 7 {} 8 T 9 {}".format(phys.Omega_Bh2, max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * (1 - phys.f_axion), 1.0e-6]), max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * phys.f_axion, 1.0e-6]), phys.m_axion, 100 * phys.h, phys.n, np.exp(phys.logAs_1010) / 1.0e10, fileroot), shell=True)
+                subprocess.call(CAMB_path+" /home/gerrit/kSZ/axionCAMB/inifiles/params.ini 1 {} 2 {} 3 {} 4 {} 5 {} 6 {} 7 {} 8 T 9 {}".format(phys.Omega_Bh2, max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * (1 - phys.f_axion), 1.0e-6]), max([(phys.Omega0 - phys.OmegaB) * phys.h ** 2 * phys.f_axion, 1.0e-6]), phys.m_axion, 100 * phys.h, phys.n, np.exp(phys.logAs_1010) / 1.0e10, fileroot), shell=True)
         except Exception as ex:
             print(str(ex))
             print("AxionCAMB failed!")
