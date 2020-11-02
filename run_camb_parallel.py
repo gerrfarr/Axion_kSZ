@@ -63,10 +63,10 @@ class CAMBRun:
                 log_file.write("CAMB took {:.2f}s\n".format(time))
 
                 shutil.move(os.getcwd() + "/" + camb_root + "_params.ini", db_entry['path_root'] + "_params.ini")
-                shutil.move(os.getcwd() + "/" + camb_root + "_matterpower_out.dat", db_entry['path_root'] + "_matterpower_out.dat")
                 shutil.move(os.getcwd() + "/" + camb_root + "_evolution.dat", db_entry['path_root'] + "_evolution.dat")
                 shutil.move(os.getcwd() + "/" + camb_root + "_devolution.dat", db_entry['path_root'] + "_devolution.dat")
                 shutil.move(os.getcwd() + "/" + camb_root + "_a_vals.dat", db_entry['path_root'] + "_a_vals.dat")
+                shutil.move(os.getcwd() + "/" + camb_root + "_matterpower_out.dat", db_entry['path_root'] + "_matterpower_out.dat")
                 shutil.move(os.getcwd() + "/" + camb_root + "_transfer_out.dat", db_entry['path_root'] + "_transfer_out.dat")
             except Exception as ex:
                 log_file.write("AxionCAMB failed! Got following exception: "+str(ex)+"\n")
